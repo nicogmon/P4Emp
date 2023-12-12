@@ -27,14 +27,16 @@ void setup(){
 
 
 void loop(){
-  digitalWrite(PIN_Motor_AIN_1, HIGH);
-  digitalWrite(PIN_Motor_PWMA, HIGH);
-  digitalWrite(PIN_Motor_BIN_1, HIGH);
-  digitalWrite(PIN_Motor_PWMB, HIGH);
-  delay(3000);
-  digitalWrite(PIN_Motor_AIN_1, LOW);
-  digitalWrite(PIN_Motor_PWMA, LOW);
-  digitalWrite(PIN_Motor_BIN_1, LOW);
-  digitalWrite(PIN_Motor_PWMB, LOW);
-  delay(3000);
+  Mover_Adelante();
+  delay(300);
+}
+
+
+
+void Mover_Adelante()
+{
+  digitalWrite (PIN_Motor_AIN_1, HIGH);
+  digitalWrite (PIN_Motor_PWMA, 2);
+  digitalWrite (PIN_Motor_BIN_1, HIGH);
+  digitalWrite (PIN_Motor_PWMB, 2);
 }

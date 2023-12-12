@@ -50,7 +50,7 @@ long dist = 0;
 int last_dir = 0;
 
 
-int data[5];
+int data[3];
 
 void setup() {
   // put your setup code here, to run once:
@@ -104,21 +104,33 @@ int reaction(int dato1, int dato2, int dato3){
     Mover_Stop();
     return 0;
   }
-  if (dato1 == 1){
+  if (dato1 == 1 && dato2 == 0){
     Pivotar_Izquierda();
     last_dir = 0;
-    FastLED.showColor(Color(0,0,0));
+    FastLED.showColor(Color(0,255,0));
     return TURN_RIGHT;
   }
-  else if (dato3 == 1){
+  else if (dato1 == 1 && dato2 == 1){
+    Girar_Izquierda();
+    last_dir = 0;
+    FastLED.showColor(Color(0,255,0));
+    return TURN_RIGHT;
+  }
+  else if (dato3 == 1 && dato2 ==0){
     Pivotar_Derecha();
     last_dir = 1;
-    FastLED.showColor(Color(0,0,0));
+    FastLED.showColor(Color(0,255,0));
+    return TURN_LEFT;
+  }
+  else if (dato3 == 1 && dato2 ==1){
+    Girar_Derecha();
+    last_dir = 1;
+    FastLED.showColor(Color(0,255,0));
     return TURN_LEFT;
   }
   else if (dato2 == 1){
     Mover_Adelante();
-    FastLED.showColor(Color(0,0,0));
+    FastLED.showColor(Color(0,255,0));
     return STRAIGHT;
   }
   else{
@@ -127,7 +139,6 @@ int reaction(int dato1, int dato2, int dato3){
     if (last_dir == 0){
       Pivotar_Derecha();
     } else if (last_dir == 1){
-      
       Pivotar_Izquierda();
     } 
   }
@@ -160,15 +171,31 @@ void callback_ultrasonidos(){
   
 }
 void callback_infrarojos(){
-  data[0] = digitalRead(PIN_ITR20001_LEFT); 
-  data[1] = digitalRead(PIN_ITR20001_MIDDLE); 
-  data[2] = digitalRead(PIN_ITR20001_RIGHT);
+  data[0] = analogRead(PIN_ITR20001_LEFT); 
+  data[1] = analogRead(PIN_ITR20001_MIDDLE); 
+  data[2] = analogRead(PIN_ITR20001_RIGHT);
+
+  for (int i = 0 ; i < 3; i++){
+    if (data[i] > 900){
+      data[i] = 1;
+    }
+    else if (data[i] < 200){
+      data[i] = 0;
+    }else {
+      //tenemos la opciond e considerar que ha visto algo de negro y por si acaso girar
+      //pero esto igual es demasiado redundante o conflictivo con el comparar tambien 
+      //los posibles datos con mas de un uno tipo 110 o 011 
+      //de hecho habria que cabiar y ver que poner en casod e que sea 2 
+      //data[i = 2]
+    }
+  }
   Serial.print(data[0]);
   Serial.print(" ");
   Serial.print(data[1]);
   Serial.print(" ");
   Serial.print(data[2]);
   Serial.println();
+  
   reaction(data[0], data[1], data[2]);
 }
 
@@ -185,16 +212,34 @@ void Pivotar_Izquierda()
  
   digitalWrite (PIN_Motor_AIN_1, HIGH);
   analogWrite (PIN_Motor_PWMA, 90);
+  digitalWrite (PIN_Motor_BIN_1, LOW);
+  analogWrite (PIN_Motor_PWMB, 90);
+ 
+}
+void Girar_Izquierda()
+{
+ 
+  digitalWrite (PIN_Motor_AIN_1, HIGH);
+  analogWrite (PIN_Motor_PWMA, 90);
   digitalWrite (PIN_Motor_BIN_1,HIGH);
   analogWrite (PIN_Motor_PWMB, 0);
  
 }
 
-void Pivotar_Derecha()
+void Girar_Derecha()
 {
 
   digitalWrite (PIN_Motor_AIN_1,HIGH);
   analogWrite (PIN_Motor_PWMA,0);
+  digitalWrite (PIN_Motor_BIN_1,HIGH);
+  analogWrite (PIN_Motor_PWMB, 90);
+}
+
+void Pivotar_Derecha()
+{
+
+  digitalWrite (PIN_Motor_AIN_1,LOW);
+  analogWrite (PIN_Motor_PWMA,90);
   digitalWrite (PIN_Motor_BIN_1,HIGH);
   analogWrite (PIN_Motor_PWMB, 90);
 }

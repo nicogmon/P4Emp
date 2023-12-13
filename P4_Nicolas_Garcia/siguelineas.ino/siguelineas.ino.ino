@@ -81,7 +81,7 @@ void setup() {
   controller.add(&Thread1);  
   
   Thread2.enabled = true;
-  Thread2.setInterval(300);
+  Thread2.setInterval(100);
   Thread2.onRun(callback_infrarojos);
   controller.add(&Thread2);
 

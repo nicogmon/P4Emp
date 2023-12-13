@@ -2,20 +2,7 @@
 #include <StaticThreadController.h>
 #include <ThreadController.h>
 #include "FastLED.h"
-#include "WiFi.h"
-#include "Adafruit_MQTT.h"
-#include <PubSubClient.h>
 
-
-const char* ssid = "";
-const char* password = "";
-const char* mqtt_server = "193.147.53.2";
-const char* topic = "/SETR/2023/11/";
-
-WiFiClient wifiClient;
-Adafruit_MQTT_Client mqttClient(&wifiClient, MQTT_SERVER, MQTT_PORT);
-
-#define AIO_SERVER "garceta.tsc.urjc.es"
 
 #define PIN_RBGLED 4
 #define NUM_LEDS 1
@@ -64,38 +51,11 @@ int last_dir = 0;
 
 int data[3];
 
-void initWiFi() {
 
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
-  Serial.print("Connecting to WiFi ..");
-  while (WiFi.status() != WL_CONNECTED) {
-    Serial.print('.');
-    delay(1000);
-  }
-
-  Serial.print("IP Address: ");
-  Serial.println(WiFi.localIP());
-  Serial.print("RRSI: ");
-  Serial.println(WiFi.RSSI());
-}
-
-void MQTT_connect() {
-  int8_t ret;
-  while ((ret = mqttClient.connect()) != 0) {
-    Serial.println(mqttClient.connectErrorString(ret));
-    Serial.println("Intentando conexión MQTT...");
-    mqttClient.disconnect();
-    delay(5000);
-  }
-  Serial.println("Conectado al servidor MQTT");
-}
 
 void setup() {
   // put your setup code here, to run once:
-  Serial.begin(115200);
-  initWiFi();
-  MQTT_connect();
+  
 
   Serial.begin(9600);
   pinMode(PIN_ITR20001_LEFT, INPUT);
@@ -119,17 +79,20 @@ void setup() {
 
   Thread1.enabled = true;
 
-  Thread1.setInterval(300);
+  Thread1.setInterval(100);
   Thread1.onRun(callback_ultrasonidos);
   controller.add(&Thread1);  
   
   Thread2.enabled = true;
-  Thread2.setInterval(300);
+  Thread2.setInterval(10);
   Thread2.onRun(callback_infrarojos);
   controller.add(&Thread2);
 
   FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
   FastLED.setBrightness(20);
+
+
+
 
 }
 
@@ -148,7 +111,7 @@ int reaction(int dato1, int dato2, int dato3){
     return 0;
   }
   if (dato1 == 1 && dato2 == 0){
-    Pivotar_Izquierda();
+    Girar_Izquierda();
     last_dir = 0;
     FastLED.showColor(Color(0,255,0));
     return TURN_RIGHT;
@@ -160,7 +123,7 @@ int reaction(int dato1, int dato2, int dato3){
     return TURN_RIGHT;
   }
   else if (dato3 == 1 && dato2 ==0){
-    Pivotar_Derecha();
+    Girar_Derecha();
     last_dir = 1;
     FastLED.showColor(Color(0,255,0));
     return TURN_LEFT;
@@ -176,13 +139,13 @@ int reaction(int dato1, int dato2, int dato3){
     FastLED.showColor(Color(0,255,0));
     return STRAIGHT;
   }
-  else{
+  else if (dato1 == 0 && dato2 == 0 && dato3 == 0) {
 
     FastLED.showColor(Color(255,0,0));
     if (last_dir == 0){
-      Pivotar_Derecha();
-    } else if (last_dir == 1){
       Pivotar_Izquierda();
+    } else if (last_dir == 1){
+      Pivotar_Derecha();
     } 
   }
   return 0;
@@ -191,10 +154,9 @@ int reaction(int dato1, int dato2, int dato3){
   
 void loop() {
   controller.run();
-  // Publicar el mensaje en el topic especificado
-  Adafruit_MQTT_Publish mqttPublish(&mqttClient, MQTT_TOPIC);
-  mqttPublish.publish(mensaje);
-  delay(5000); // Espera 5 segundos antes de enviar el próximo mensaje
+  
+  
+
 
   // put your main code here, to run repeatedly:
 
@@ -219,7 +181,7 @@ void callback_infrarojos(){
   data[2] = analogRead(PIN_ITR20001_RIGHT);
 
   for (int i = 0 ; i < 3; i++){
-    if (data[i] > 900){
+    if (data[i] > 600){
       data[i] = 1;
     }
     else if (data[i] < 200){
@@ -245,25 +207,25 @@ void callback_infrarojos(){
 void Mover_Adelante()
 {
   digitalWrite (PIN_Motor_AIN_1, HIGH);
-  analogWrite (PIN_Motor_PWMA, 80);
+  analogWrite (PIN_Motor_PWMA, 120);
   digitalWrite (PIN_Motor_BIN_1, HIGH);
-  analogWrite (PIN_Motor_PWMB, 80);
+  analogWrite (PIN_Motor_PWMB, 120);
 }
 
 void Pivotar_Izquierda()
 {
  
   digitalWrite (PIN_Motor_AIN_1, HIGH);
-  analogWrite (PIN_Motor_PWMA, 90);
-  digitalWrite (PIN_Motor_BIN_1, LOW);
-  analogWrite (PIN_Motor_PWMB, 90);
+  analogWrite (PIN_Motor_PWMA, 100);
+  digitalWrite (PIN_Motor_BIN_1, HIGH);
+  analogWrite (PIN_Motor_PWMB, 30);
  
 }
 void Girar_Izquierda()
 {
  
   digitalWrite (PIN_Motor_AIN_1, HIGH);
-  analogWrite (PIN_Motor_PWMA, 90);
+  analogWrite (PIN_Motor_PWMA, 100);
   digitalWrite (PIN_Motor_BIN_1,HIGH);
   analogWrite (PIN_Motor_PWMB, 0);
  
@@ -275,16 +237,16 @@ void Girar_Derecha()
   digitalWrite (PIN_Motor_AIN_1,HIGH);
   analogWrite (PIN_Motor_PWMA,0);
   digitalWrite (PIN_Motor_BIN_1,HIGH);
-  analogWrite (PIN_Motor_PWMB, 90);
+  analogWrite (PIN_Motor_PWMB, 100);
 }
 
 void Pivotar_Derecha()
 {
 
-  digitalWrite (PIN_Motor_AIN_1,LOW);
-  analogWrite (PIN_Motor_PWMA,90);
+  digitalWrite (PIN_Motor_AIN_1,HIGH);
+  analogWrite (PIN_Motor_PWMA, 30);
   digitalWrite (PIN_Motor_BIN_1,HIGH);
-  analogWrite (PIN_Motor_PWMB, 90);
+  analogWrite (PIN_Motor_PWMB, 100);
 }
 
 void Mover_Stop()

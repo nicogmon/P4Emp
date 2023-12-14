@@ -18,7 +18,7 @@ CRGB leds[NUM_LEDS];
 #define STRAIGHT 2
 #define TURN_LEFT 3
 
-#define REACTION_FREC 5
+#define REACTION_FREC 1
 #define ULTRASONIC_FREC 20
 
 // Enable/Disable motor control.
@@ -41,10 +41,6 @@ CRGB leds[NUM_LEDS];
 #define TRIG_PIN 13  
 #define ECHO_PIN 12 
 
-
-ThreadController controller = ThreadController();
-Thread Thread1 = Thread();
-Thread Thread2 = Thread();
 
 long time = 0;
 long dist = 0;
@@ -158,18 +154,28 @@ void setup() {
     NULL
   );
 
-  /*Thread1.enabled = true;
-  Thread1.setInterval(100);
-  Thread1.onRun(callback_ultrasonidos);
-  controller.add(&Thread1);  
-  
-  Thread2.enabled = true;
-  Thread2.setInterval(10);
-  Thread2.onRun(callback_infrarojos);
-  controller.add(&Thread2);*/
-
   FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
   FastLED.setBrightness(20);
+
+  while(1) {
+
+    if (Serial.available()) {
+
+      char c = Serial.read();
+      sendBuff += c;
+      
+      if (c == '}')  {            
+        Serial.print("Received data in serial port from ESP32: ");
+        Serial.println(sendBuff);
+
+        // Set Red Green to LED
+        FastLED.showColor(Color(0, 255, 0));
+        sendBuff = "";
+        break;
+      } 
+
+    }
+  }
 
 
 
@@ -188,10 +194,11 @@ int reaction(int dato1, int dato2, int dato3){
 
   if (dist < 15){
     Mover_Stop();
+    Serial.pritnln("")
     return 0;
   }
   if (dato1 == 1 && dato2 == 0){
-    Girar_Izquierda();
+    Pivotar_Izquierda();
     last_dir = 0;
     FastLED.showColor(Color(0,255,0));
     return TURN_RIGHT;
@@ -203,7 +210,7 @@ int reaction(int dato1, int dato2, int dato3){
     return TURN_RIGHT;
   }
   else if (dato3 == 1 && dato2 ==0){
-    Girar_Derecha();
+    Pivotar_Derecha();
     last_dir = 1;
     FastLED.showColor(Color(0,255,0));
     return TURN_LEFT;
@@ -223,9 +230,9 @@ int reaction(int dato1, int dato2, int dato3){
 
     FastLED.showColor(Color(255,0,0));
     if (last_dir == 0){
-      Pivotar_Izquierda();
+      Arco_Izquierda();
     } else if (last_dir == 1){
-      Pivotar_Derecha();
+      Arco_Derecha();
     } 
   }
   return 0;
@@ -234,54 +241,12 @@ int reaction(int dato1, int dato2, int dato3){
   
 void loop() {
   
-  
-
 
   // put your main code here, to run repeatedly:
 
 }
 
-/*void callback_ultrasonidos(){
-  digitalWrite(TRIG_PIN, HIGH);
-  delayMicroseconds(10);  //Enviamos un pulso de 10us
-  digitalWrite(TRIG_PIN, LOW);
-  time = pulseIn(ECHO_PIN, HIGH);
-  dist = time / 59;  // distancia en cm
-  if (dist < 15){
-    Mover_Stop();
-    return ;
-  }
-  
-  
-}
-void callback_infrarojos(){
-  data[0] = analogRead(PIN_ITR20001_LEFT); 
-  data[1] = analogRead(PIN_ITR20001_MIDDLE); 
-  data[2] = analogRead(PIN_ITR20001_RIGHT);
 
-  for (int i = 0 ; i < 3; i++){
-    if (data[i] > 600){
-      data[i] = 1;
-    }
-    else if (data[i] < 200){
-      data[i] = 0;
-    }else {
-      //tenemos la opciond e considerar que ha visto algo de negro y por si acaso girar
-      //pero esto igual es demasiado redundante o conflictivo con el comparar tambien 
-      //los posibles datos con mas de un uno tipo 110 o 011 
-      //de hecho habria que cabiar y ver que poner en casod e que sea 2 
-      //data[i = 2]
-    }
-  }
-  Serial.print(data[0]);
-  Serial.print(" ");
-  Serial.print(data[1]);
-  Serial.print(" ");
-  Serial.print(data[2]);
-  Serial.println();
-  
-  reaction(data[0], data[1], data[2]);
-}*/
 
 void Mover_Adelante()
 {
@@ -291,13 +256,13 @@ void Mover_Adelante()
   analogWrite (PIN_Motor_PWMB, 130);
 }
 
-void Pivotar_Izquierda()
+void Arco_Izquierda()
 {
  
   
   analogWrite (PIN_Motor_PWMA, 100);
   
-  analogWrite (PIN_Motor_PWMB, 30);
+  analogWrite (PIN_Motor_PWMB, 0);
  
 }
 void Girar_Izquierda()
@@ -319,13 +284,29 @@ void Girar_Derecha()
   analogWrite (PIN_Motor_PWMB, 100);
 }
 
-void Pivotar_Derecha()
+void Arco_Derecha()
 {
 
   
-  analogWrite (PIN_Motor_PWMA, 30);
+  analogWrite (PIN_Motor_PWMA, 0);
   
   analogWrite (PIN_Motor_PWMB, 100);
+}
+
+
+void Pivotar_Izquierda(){
+  analogWrite (PIN_Motor_PWMA, 100);
+  digitalWrite (PIN_Motor_BIN_1, LOW);
+  analogWrite (PIN_Motor_PWMB, 30);
+  digitalWrite (PIN_Motor_BIN_1, HIGH);
+}
+void Pivotar_Derecha(){
+  analogWrite (PIN_Motor_PWMB, 100);
+  digitalWrite (PIN_Motor_AIN_1, LOW);
+  analogWrite (PIN_Motor_PWMA, 30);
+  digitalWrite (PIN_Motor_AIN_1, HIGH);
+ 
+
 }
 
 void Mover_Stop()

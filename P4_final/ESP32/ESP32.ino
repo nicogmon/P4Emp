@@ -4,14 +4,16 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "wifieif2";
-const char* password = "Goox0sie_WZCGGh25680000";
+const char* ssid = "iPhone_de_Ana";
+const char* password = "anitaTNT";
 const char* mqtt_server = "193.147.53.2";
 const char* topic = "/SETR/2023/11/";
 const int mqtt_port = 21883;
 const char* mqttUser = "nicogmon";
 const char* mqttPassword = "urjc2023";
 
+#define RXD2 33
+#define TXD2 4
 
 #define START_LAP 0
 #define END_LAP 1
@@ -54,13 +56,14 @@ void MQTT_connect() {
     delay(5000);
   }
   Serial.println("Conectado al servidor MQTT");
-  Serial.write('1');
+  Serial2.write('1');
 }
 
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
+  Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
   initWiFi();
   MQTT_connect();
 }
@@ -95,11 +98,33 @@ void sendJsonPayload() {
 
 void JsonCreate(){//(int action, int value){
   String value;
-  if (Serial.available() > 0) {
-    int action = Serial.read();
-    while (Serial.available() > 0){ // Lee el primer byte (acción)
-      value += Serial.read(); // Lee el segundo byte (valor asociado a la acción)
+  int action = 0;
+  /*if (Serial2.available() > 0) {
+    int action = Serial2.read();
+    Serial.println(action);*/
+
+  if (Serial2.available()) {
+    String receivedString = Serial2.readStringUntil('\n');
+    if (receivedString.length() > 0) {
+      action = receivedString.toInt();
+      Serial.print("Número recibido: ");
+      Serial.println(action);
+
+      if (action == 2 || action == 1 || action == 4 || action == 8){
+        value = Serial2.readStringUntil('\n');
+        Serial.println(value);
+      }
     }
+
+  /*if (Serial2.available()) {
+    value = Serial2.readStringUntil('\n');
+    if (receivedString.length() > 0) {
+      Serial.println(value);
+    }
+  }*/
+    /*while (Serial2.available() > 0){ // Lee el primer byte (acción)
+      value += Serial2.read(); // Lee el segundo byte (valor asociado a la acción)
+    }*/
     
 
     StaticJsonDocument<200> jsonDoc;

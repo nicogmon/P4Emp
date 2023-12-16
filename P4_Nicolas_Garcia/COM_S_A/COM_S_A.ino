@@ -23,7 +23,7 @@ void setup() {
   String sendBuff;
 
   // To make this code works, remember that the switch S1 should be set to "CAM"
-  while(1) {
+  /*while(1) {
 
     if (Serial.available()) {
 
@@ -41,14 +41,14 @@ void setup() {
       } 
 
     }
-  }
+  }*/
 
 }
 
 void loop () {  
-
-  Serial.println("{ 'test': " + String(millis()) + " }");
-  delay(500);
+  Serial.println(2);
+  Serial.println(millis());
+  delay(2000);
 
 }
 

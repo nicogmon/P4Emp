@@ -157,7 +157,7 @@ void setup() {
   FastLED.addLeds<NEOPIXEL, PIN_RBGLED>(leds, NUM_LEDS);
   FastLED.setBrightness(20);
 
-  while(1) {
+  /*while(1) {
 
     if (Serial.available()) {
 
@@ -175,7 +175,7 @@ void setup() {
       } 
 
     }
-  }
+  }*/
 
 
 
@@ -194,7 +194,7 @@ int reaction(int dato1, int dato2, int dato3){
 
   if (dist < 15){
     Mover_Stop();
-    Serial.pritnln("")
+    //Serial.pritnln("")
     return 0;
   }
   if (dato1 == 1 && dato2 == 0){
@@ -251,9 +251,9 @@ void loop() {
 void Mover_Adelante()
 {
   
-  analogWrite (PIN_Motor_PWMA, 130);
+  analogWrite (PIN_Motor_PWMA, 140);
   
-  analogWrite (PIN_Motor_PWMB, 130);
+  analogWrite (PIN_Motor_PWMB, 140);
 }
 
 void Arco_Izquierda()
@@ -286,8 +286,6 @@ void Girar_Derecha()
 
 void Arco_Derecha()
 {
-
-  
   analogWrite (PIN_Motor_PWMA, 0);
   
   analogWrite (PIN_Motor_PWMB, 100);
@@ -300,19 +298,17 @@ void Pivotar_Izquierda(){
   analogWrite (PIN_Motor_PWMB, 30);
   digitalWrite (PIN_Motor_BIN_1, HIGH);
 }
+
 void Pivotar_Derecha(){
   analogWrite (PIN_Motor_PWMB, 100);
   digitalWrite (PIN_Motor_AIN_1, LOW);
   analogWrite (PIN_Motor_PWMA, 30);
   digitalWrite (PIN_Motor_AIN_1, HIGH);
  
-
 }
 
 void Mover_Stop()
-{
-
-  
+{  
   analogWrite (PIN_Motor_PWMA, 0);
   
   analogWrite (PIN_Motor_PWMB, 0);

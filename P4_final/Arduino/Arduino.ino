@@ -20,7 +20,7 @@ CRGB leds[NUM_LEDS];
 
 #define REACTION_FREC 1
 #define ULTRASONIC_FREC 20
-#define PING_FREQ 4000
+#define PING_FREC 4000
 
 // Enable/Disable motor control.
 //  HIGH: motor control enabled
@@ -80,10 +80,10 @@ static void ReactionTask(void* pvParameters){
         //data[i = 2]
       }
     }
-    status = reaction(data[0], data[1], data[2]);
-    if (status == 1){
+    reaction(data[0], data[1], data[2]);
+    /*if (status == 1){
       exit(0);
-    }
+    }*/
 
     //Serial.println("reactionTask");
     xTaskDelayUntil(&xLastWakeYime, REACTION_FREC);
@@ -106,10 +106,10 @@ static void DistanceTask(void* pvParameters){
     digitalWrite(TRIG_PIN, LOW);
     time = pulseIn(ECHO_PIN, HIGH);
     dist = time / 59;  // distancia en cm
-    if (dist < 15){
+    /*if (dist < 15){
       Mover_Stop();
       return;
-    }
+    }*/
 
       //Serial.println("reactionTask");
       xTaskDelayUntil(&xLastWakeYime, ULTRASONIC_FREC);
@@ -126,11 +126,11 @@ static void PingTask(void* pvParameters){
     xLastWakeYime = xTaskGetTickCount();
     
     unsigned long pingTime = millis();
-    Serial.write(4);
+    Serial.println(4);
     char pingStr[20];
     snprintf(pingStr, sizeof(pingStr), "%lu", pingTime);
     Serial.println(pingStr);
-    xTaskDelayUntil(&xLastWakeYime, ULTRASONIC_FREC);
+    xTaskDelayUntil(&xLastWakeYime, PING_FREC);
   }
 
 }
@@ -159,7 +159,7 @@ void setup() {
   pinMode(ECHO_PIN, INPUT);
   digitalWrite(TRIG_PIN, LOW);
 
-
+  /*
   while(1) {
 
     if (Serial.available()) {
@@ -173,13 +173,12 @@ void setup() {
         break;
       } 
 
-    }
+    }*/
 
-    Serial.write(0);
-    Serial.write(0);
+    Serial.println(0);
     start_time = millis();
 
-  }
+  //}
 
   xTaskCreate(
     ReactionTask,
@@ -204,7 +203,7 @@ void setup() {
     "PingTask",
     100,
     NULL,
-    2,
+    1,
     NULL
   );
   
@@ -227,17 +226,13 @@ int reaction(int dato1, int dato2, int dato3){
 
   if (dist < 15){
     Mover_Stop();
-    Serial.write(2);
-    char distance[4];
-    snprintf(distance, sizeof(distance), "%ld", dist);
-    Serial.println(distance);
+    Serial.println(2);
+    Serial.println(dist);
     obj_counter++;
     if (obj_counter > 20){
-      Serial.write(1);
+      Serial.println(1);
       unsigned long  end_time = millis() - start_time;
-      char buffer[20]; // Ajusta el tamaño según tus necesidades
-      snprintf(buffer, sizeof(buffer), "%lu", end_time); // Formatea el valor en el buffer
-      Serial.println(buffer);
+      Serial.println(end_time);
       return 1;
     }
     return 0;
@@ -273,7 +268,7 @@ int reaction(int dato1, int dato2, int dato3){
     return STRAIGHT;
   }
   else if (dato1 == 0 && dato2 == 0 && dato3 == 0) {
-    Serial.write(3);
+    Serial.println(3);
     FastLED.showColor(Color(255,0,0));
     if (last_dir == 0){
       Arco_Izquierda();

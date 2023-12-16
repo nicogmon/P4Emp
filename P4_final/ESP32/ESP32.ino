@@ -112,7 +112,9 @@ void JsonCreate(){//(int action, int value){
 
       if (action == 2 || action == 1 || action == 4 || action == 8){
         value = Serial2.readStringUntil('\n');
+        value.trim();
         Serial.println(value);
+        
       }
     }
 

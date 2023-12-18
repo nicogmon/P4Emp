@@ -4,8 +4,8 @@
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char* ssid = "iPhone_de_Ana";
-const char* password = "anitaTNT";
+const char* ssid = "Robotech";
+const char* password = "clv.robotech";
 const char* mqtt_server = "193.147.53.2";
 const char* topic = "/SETR/2023/11/";
 const int mqtt_port = 21883;

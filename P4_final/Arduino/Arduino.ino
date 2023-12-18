@@ -224,19 +224,18 @@ uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
 
 int reaction(int dato1, int dato2, int dato3){
 
+  //if ((millis() - start_time) > 2) {
   if (dist < 15){
     Mover_Stop();
     Serial.println(2);
     Serial.println(dist);
-    obj_counter++;
-    if (obj_counter > 20){
-      Serial.println(1);
-      unsigned long  end_time = millis() - start_time;
-      Serial.println(end_time);
-      return 1;
+
+    Serial.println(1);
+    unsigned long  end_time = millis() - start_time;
+    Serial.println(end_time);
     }
     return 0;
-  }
+  //}
 
   if (dato1 == 1 && dato2 == 0){
     Pivotar_Izquierda();

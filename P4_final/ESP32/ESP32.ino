@@ -3,9 +3,12 @@
 #include "Adafruit_MQTT_Client.h"
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <Thread.h>
+#include <StaticThreadController.h>
+#include <ThreadController.h>
 
-const char* ssid = "Robotech";
-const char* password = "clv.robotech";
+const char* ssid = "iPhone_de_Ana";
+const char* password = "anitaTNT";
 const char* mqtt_server = "193.147.53.2";
 const char* topic = "/SETR/2023/11/";
 const int mqtt_port = 21883;
@@ -25,6 +28,8 @@ const char* mqttPassword = "urjc2023";
 #define LINE_FOUND 7 
 #define VISIBLE_LINE 8
 
+ThreadController controller = ThreadController(false);
+Thread Thread1 = Thread();
 
 WiFiClient wifiClient;
 //Adafruit_MQTT_Client mqttClient(&wifiClient, mqtt_server, mqtt_port);
@@ -45,6 +50,18 @@ void initWiFi() {
   Serial.println(WiFi.RSSI());
 }
 
+void callback_ping(){
+  StaticJsonDocument<200> jsonDoc;
+  jsonDoc["team_name"] = "Dobbyziosos";
+  jsonDoc["id"] = "11";
+  jsonDoc["action"] = "PING";
+  jsonDoc["time"] = millis()/1000;
+
+  String jsonString = "";
+  serializeJson(jsonDoc, jsonString);
+  client.publish(topic, (char *)jsonString.c_str());
+}
+
 
 
 void MQTT_connect() {
@@ -56,7 +73,7 @@ void MQTT_connect() {
     delay(5000);
   }
   Serial.println("Conectado al servidor MQTT");
-  Serial2.write('1');
+  Serial2.println(1);
 }
 
 
@@ -64,14 +81,24 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial2.begin(9600, SERIAL_8N1, RXD2, TXD2);
+
+  Thread1.enabled = true;
+  Thread1.setInterval(4000);
+  Thread1.onRun(callback_ping);
+  controller.add(&Thread1);
+
+
   initWiFi();
   MQTT_connect();
+
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   // Publicar el mensaje en el topic especificado
+  controller.run();
    // Example: Send the JSON payload when a condition is met
+
   client.loop();
   //sendJsonPayload();
   JsonCreate();
@@ -150,6 +177,10 @@ void JsonCreate(){//(int action, int value){
     String jsonString = "";
     serializeJson(jsonDoc, jsonString);
     client.publish(topic, (char *)jsonString.c_str());
+     
+    if (action == 1){
+      Thread1.enabled = false;
+    }
 
   }
 

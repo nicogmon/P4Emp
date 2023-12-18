@@ -44,7 +44,7 @@ CRGB leds[NUM_LEDS];
 
 
 long time = 0;
-long dist = 0;
+long dist = 100;
 int obj_counter = 0;
 
 
@@ -55,11 +55,11 @@ int data[3];
 unsigned long start_time;
 
 static void ReactionTask(void* pvParameters){
-  TickType_t xLastWakeYime;
+  TickType_t xLastWakeTime;
   int status = 0;
   while(1)
   {
-    xLastWakeYime = xTaskGetTickCount();
+    xLastWakeTime = xTaskGetTickCount();
     
 
     data[0] = analogRead(PIN_ITR20001_LEFT); 
@@ -80,25 +80,26 @@ static void ReactionTask(void* pvParameters){
         //data[i = 2]
       }
     }
-    reaction(data[0], data[1], data[2]);
-    /*if (status == 1){
+    status = reaction(data[0], data[1], data[2]);
+    if (status == -1){
+      delay(500);
       exit(0);
-    }*/
+    }
 
     //Serial.println("reactionTask");
-    xTaskDelayUntil(&xLastWakeYime, REACTION_FREC);
+    xTaskDelayUntil(&xLastWakeTime, REACTION_FREC);
     
   }
 }
 
 
 static void DistanceTask(void* pvParameters){
-  TickType_t xLastWakeYime;
+  TickType_t xLastWakeTime;
 
   while(1)
   {
 
-    xLastWakeYime = xTaskGetTickCount();
+    xLastWakeTime = xTaskGetTickCount();
     
 
     digitalWrite(TRIG_PIN, HIGH);
@@ -112,28 +113,29 @@ static void DistanceTask(void* pvParameters){
     }*/
 
       //Serial.println("reactionTask");
-      xTaskDelayUntil(&xLastWakeYime, ULTRASONIC_FREC);
+    xTaskDelayUntil(&xLastWakeTime, ULTRASONIC_FREC);
       
   }
   
 }
 
-static void PingTask(void* pvParameters){
-  TickType_t xLastWakeYime;
+/*static void PingTask(void* pvParameters){
+  TickType_t xLastWakeTime;
   while(1)
   {
 
-    xLastWakeYime = xTaskGetTickCount();
+    xLastWakeTime = xTaskGetTickCount();
     
-    unsigned long pingTime = millis();
+    unsigned long pingTime = millis()/1000;
     Serial.println(4);
-    char pingStr[20];
+    Serial.println(pingTime);
+    /*char pingStr[20];
     snprintf(pingStr, sizeof(pingStr), "%lu", pingTime);
     Serial.println(pingStr);
-    xTaskDelayUntil(&xLastWakeYime, PING_FREC);
+    xTaskDelayUntil(&xLastWakeTime, PING_FREC);
   }
 
-}
+}*/
 
 
 void setup() {
@@ -159,12 +161,15 @@ void setup() {
   pinMode(ECHO_PIN, INPUT);
   digitalWrite(TRIG_PIN, LOW);
 
-  /*
+  
   while(1) {
 
     if (Serial.available()) {
 
-      int c = Serial.read();
+      String start = Serial.readStringUntil('\n');
+      start.trim();
+      int c = start.toInt();
+      
       if (c == 1){
 
 
@@ -173,12 +178,12 @@ void setup() {
         break;
       } 
 
-    }*/
-
+    }
+  }
     Serial.println(0);
     start_time = millis();
 
-  //}
+  
 
   xTaskCreate(
     ReactionTask,
@@ -198,14 +203,14 @@ void setup() {
     NULL
   );
   
-  xTaskCreate(
+  /*xTaskCreate(
     PingTask,
     "PingTask",
     100,
     NULL,
     1,
     NULL
-  );
+  );*/
   
 
 
@@ -224,18 +229,19 @@ uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
 
 int reaction(int dato1, int dato2, int dato3){
 
-  //if ((millis() - start_time) > 2) {
   if (dist < 15){
     Mover_Stop();
     Serial.println(2);
     Serial.println(dist);
-
+    /*obj_counter++;
+    if (obj_counter > 20){*/
     Serial.println(1);
     unsigned long  end_time = millis() - start_time;
-    Serial.println(end_time);
-    }
-    return 0;
-  //}
+    Serial.println(end_time/1000);
+    return -1;
+    //}
+    
+  }
 
   if (dato1 == 1 && dato2 == 0){
     Pivotar_Izquierda();

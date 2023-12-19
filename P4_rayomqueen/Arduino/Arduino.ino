@@ -48,6 +48,8 @@ long dist = 100;
 int obj_counter = 0;
 
 int lineLost = 1;
+int lost_counter = 0;
+int reactions_counter = 0;
 
 int last_dir = 0;
 
@@ -230,15 +232,22 @@ uint32_t Color(uint8_t r, uint8_t g, uint8_t b)
 
 int reaction(int dato1, int dato2, int dato3){
 
-  if (dist < 15){
+  reactions_counter ++;
+
+  if (dist < 20){
     Mover_Stop();
     Serial.println(2);
-    Serial.println( );
+    Serial.println(dist);
     /*obj_counter++;
     if (obj_counter > 20){*/
     Serial.println(1);
     unsigned long  end_time = millis() - start_time;
     Serial.println(end_time);
+
+    //unsigned long visible_line = lost_counter/reactions_counter;
+    //Serial.println(8);
+    //Serial.println(visible_line);
+
     return -1;
     //}
     
@@ -279,6 +288,8 @@ int reaction(int dato1, int dato2, int dato3){
     return STRAIGHT;
   }
   else if (dato1 == 0 && dato2 == 0 && dato3 == 0) {
+    lost_counter ++;
+
     if(lineLost == 1){
       Serial.println(3);
       lineLost = 0;
@@ -304,18 +315,18 @@ void loop() {
 
 void Mover_Adelante()
 { 
-  analogWrite (PIN_Motor_PWMA, 150);
-  analogWrite (PIN_Motor_PWMB, 150);
+  analogWrite (PIN_Motor_PWMA, 160);
+  analogWrite (PIN_Motor_PWMB, 160);
 }
 
 void Arco_Izquierda()
 {
-  analogWrite (PIN_Motor_PWMA, 100);
+  analogWrite (PIN_Motor_PWMA, 120);
   analogWrite (PIN_Motor_PWMB, 0);
 }
 void Girar_Izquierda()
 {
-  analogWrite (PIN_Motor_PWMA, 100);
+  analogWrite (PIN_Motor_PWMA, 120);
   analogWrite (PIN_Motor_PWMB, 0);
  
 }
@@ -323,26 +334,26 @@ void Girar_Izquierda()
 void Girar_Derecha()
 {
   analogWrite (PIN_Motor_PWMA,0);
-  analogWrite (PIN_Motor_PWMB, 100);
+  analogWrite (PIN_Motor_PWMB, 120);
 }
 
 void Arco_Derecha()
 {
   analogWrite (PIN_Motor_PWMA, 0);
-  analogWrite (PIN_Motor_PWMB, 100);
+  analogWrite (PIN_Motor_PWMB, 120);
 }
 
 
 void Pivotar_Izquierda(){
-  analogWrite (PIN_Motor_PWMA, 100);
+  analogWrite (PIN_Motor_PWMA, 120);
   digitalWrite (PIN_Motor_BIN_1, LOW);
-  analogWrite (PIN_Motor_PWMB, 30);
+  analogWrite (PIN_Motor_PWMB, 45);
   digitalWrite (PIN_Motor_BIN_1, HIGH);
 }
 void Pivotar_Derecha(){
-  analogWrite (PIN_Motor_PWMB, 100);
+  analogWrite (PIN_Motor_PWMB, 120);
   digitalWrite (PIN_Motor_AIN_1, LOW);
-  analogWrite (PIN_Motor_PWMA, 30);
+  analogWrite (PIN_Motor_PWMA, 45);
   digitalWrite (PIN_Motor_AIN_1, HIGH);
  
 

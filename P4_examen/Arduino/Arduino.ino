@@ -197,7 +197,7 @@ int reaction(int dato1, int dato2, int dato3){
 
   reactions_counter++;
 
-  if (dist < 25){
+  if (dist < 20){
     Mover_Stop();
     Serial.println(2);
     Serial.println(dist);
